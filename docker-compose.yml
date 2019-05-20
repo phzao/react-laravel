@@ -1,0 +1,49 @@
+version: '2'
+
+services:
+  app:
+    build:
+      context: ./laravel
+      dockerfile: app.dockerfile
+    working_dir: /var/www
+    container_name: bigmoney-php
+    volumes:
+      - ./laravel:/var/www
+    environment:
+      - "DB_PORT=3306"
+      - "DB_HOST=database"
+  frontend:
+    build: .
+    container_name: bigmoney-react
+    volumes:
+      - /app/node_modules
+      - .:/app
+    ports:
+      - "80:80"
+  web:
+    build:
+      context: ./laravel
+      dockerfile: web.dockerfile
+    working_dir: /var/www
+    container_name: bigmoney-web
+    volumes_from:
+      - app
+    ports:
+      - 8080:8080
+
+  # The Database
+  database:
+    image: mariadb:10.3
+    container_name: bigmoney-database
+    volumes:
+      - dbdata:/var/lib/mysql
+    environment:
+      - "MYSQL_DATABASE=bigmoney"
+      - "MYSQL_USER=admin"
+      - "MYSQL_PASSWORD=123"
+      - "MYSQL_ROOT_PASSWORD=123"
+    ports:
+      - "3306:3306"
+
+volumes:
+  dbdata:
